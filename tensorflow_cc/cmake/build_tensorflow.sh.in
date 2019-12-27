@@ -37,7 +37,7 @@ if [ "@ALLOW_CUDA@" = "ON" ] && hash nvcc 2>/dev/null; then
     echo "CUDA support enabled"
     cuda_config_opts="--config=cuda"
     export TF_NEED_CUDA=1
-    export TF_CUDA_COMPUTE_CAPABILITIES=${TF_CUDA_COMPUTE_CAPABILITIES:-"3.5,7.0"}  # default from configure.py
+    export TF_CUDA_COMPUTE_CAPABILITIES=${TF_CUDA_COMPUTE_CAPABILITIES:-"6.1"}  # default from configure.py
     export TF_CUDA_PATHS=${TF_CUDA_PATHS:-"/opt/cuda,/usr/local/cuda,/usr/local,/usr/cuda,/usr"}
     export TF_CUDA_VERSION="$(nvcc --version | sed -n 's/^.*release \(.*\),.*/\1/p')"
     export TF_NCCL_VERSION="$(find / -name 'libnccl.so.*' | tail -n1 | sed -r 's/^.*\.so\.//')"
@@ -76,7 +76,7 @@ fi
 # configure and build
 ./configure
 bazel build --config=opt \
-            --config=monolithic \
+             --config=monolithic --config=nonccl --config=noaws --config=nohdfs --config=noignite --config=nokafka \
             $cuda_config_opts \
             tensorflow:libtensorflow_cc.so
 bazel shutdown
