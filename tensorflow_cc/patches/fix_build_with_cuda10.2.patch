@@ -1,0 +1,62 @@
+From 38f476eb76ffb824a39513d522fbfc6218b1379f Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Fri, 27 Dec 2019 05:06:51 +0000
+Subject: [PATCH] fix_build_with_cuda10.2
+
+---
+ tensorflow/lite/experimental/ruy/platform.h | 10 +++++-----
+ third_party/mpi/mpi.bzl                     |  2 +-
+ third_party/nccl/build_defs.bzl.tpl         |  2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/tensorflow/lite/experimental/ruy/platform.h b/tensorflow/lite/experimental/ruy/platform.h
+index 7a83173acb..dc0f15dba2 100644
+--- a/tensorflow/lite/experimental/ruy/platform.h
++++ b/tensorflow/lite/experimental/ruy/platform.h
+@@ -53,12 +53,12 @@ limitations under the License.
+ // compilation.
+ //
+ // TODO(b/138433137) Select AVX-512 at runtime rather than via compile options.
+-#if defined(__AVX512F__) && defined(__AVX512DQ__) && defined(__AVX512CD__) && \
+-    defined(__AVX512BW__) && defined(__AVX512VL__)
+-#define RUY_DONOTUSEDIRECTLY_AVX512 1
+-#else
++//#if defined(__AVX512F__) && defined(__AVX512DQ__) && defined(__AVX512CD__) && \
++//    defined(__AVX512BW__) && defined(__AVX512VL__)
++//#define RUY_DONOTUSEDIRECTLY_AVX512 1
++//#else
+ #define RUY_DONOTUSEDIRECTLY_AVX512 0
+-#endif
++//#endif
+ 
+ // Detect APPLE
+ #ifdef __APPLE__
+diff --git a/third_party/mpi/mpi.bzl b/third_party/mpi/mpi.bzl
+index 3a483351d1..626a9bbccd 100644
+--- a/third_party/mpi/mpi.bzl
++++ b/third_party/mpi/mpi.bzl
+@@ -2,7 +2,7 @@
+ #based on the configuration options return one or the other
+ 
+ def mpi_hdr():
+-    MPI_LIB_IS_OPENMPI = True
++    MPI_LIB_IS_OPENMPI = False
+     hdrs = []
+     if MPI_LIB_IS_OPENMPI:
+         hdrs = ["mpi.h", "mpi_portable_platform.h"]  #When using OpenMPI
+diff --git a/third_party/nccl/build_defs.bzl.tpl b/third_party/nccl/build_defs.bzl.tpl
+index 5719139855..0a62f49ce9 100644
+--- a/third_party/nccl/build_defs.bzl.tpl
++++ b/third_party/nccl/build_defs.bzl.tpl
+@@ -113,7 +113,7 @@ def _device_link_impl(ctx):
+             "--cmdline=--compile-only",
+             "--link",
+             "--compress-all",
+-            "--bin2c-path=%s" % bin2c.dirname,
++##            "--bin2c-path=%s" % bin2c.dirname,
+             "--create=%s" % tmp_fatbin.path,
+             "--embedded-fatbin=%s" % fatbin_h.path,
+         ] + images,
+-- 
+2.17.1
+
