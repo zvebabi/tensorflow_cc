@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.3 FATAL_ERROR)
 project(
   "tensorflow_cc"
-  VERSION 1.13.1
+  VERSION 2.1.0
 )
 
 # Static library with no GPU support is built by default.
 # Use the following option to build a shared library with GPU support.
 # If enabled, bazel has to be installed.
-option(TENSORFLOW_SHARED "Build shared library (required for GPU support)." OFF)
+option(TENSORFLOW_SHARED "Build shared library (required for GPU support)." ON)
 option(ALLOW_CUDA "When building the shared library, try to find and use CUDA." ON)
-option(TENSORFLOW_STATIC "Build static library." ON)
-set(TENSORFLOW_TAG "v1.13.1" CACHE STRING "The tensorflow release tag to be checked out (default v1.13.1).")
+option(TENSORFLOW_STATIC "Build static library." OFF)
+set(TENSORFLOW_TAG "v2.1.0" CACHE STRING "The tensorflow release tag to be checked out (default v2.1.0).")
 option(SYSTEM_PROTOBUF "Use system protobuf instead of static protobuf from contrib/makefile." OFF)
 
 # -------------
@@ -25,6 +25,7 @@ set(CMAKECFG_INSTALL_DIR lib/cmake/TensorflowCC)
 
 # Configure the build_tensorflow script.
 configure_file("cmake/build_tensorflow.sh.in" "build_tensorflow.sh" @ONLY)
+configure_file("cmake/build_libprotobuf.in" "build_libprotobuf.sh" @ONLY)
 
 # --------------------------------------------------------
 # Include External Projects for Shared / Static Tensorflow
@@ -71,11 +72,8 @@ if(TENSORFLOW_SHARED)
     "${CMAKE_INSTALL_PREFIX}/include/tensorflow"
     "${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-genfiles"
     "${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-genfiles/genfiles"
-    "${CMAKE_INSTALL_PREFIX}/include/tensorflow/tensorflow/contrib/makefile/downloads"
-    "${CMAKE_INSTALL_PREFIX}/include/tensorflow/tensorflow/contrib/makefile/downloads/absl"
-    "${CMAKE_INSTALL_PREFIX}/include/tensorflow/tensorflow/contrib/makefile/downloads/eigen"
-    "${CMAKE_INSTALL_PREFIX}/include/tensorflow/tensorflow/contrib/makefile/downloads/gemmlowp"
-    "${CMAKE_INSTALL_PREFIX}/include/tensorflow/tensorflow/contrib/makefile/downloads/nsync/public"
+    "${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-tensorflow/external/eigen_archive"
+    "${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-tensorflow/external/com_google_absl"
   )
   target_link_libraries(
     tensorflow_cc_shared INTERFACE
@@ -94,7 +92,7 @@ if(TENSORFLOW_SHARED)
   else()
     target_include_directories(
       tensorflow_cc_shared INTERFACE
-      "${CMAKE_INSTALL_PREFIX}/include/tensorflow/tensorflow/contrib/makefile/gen/protobuf-host/include"
+      "${CMAKE_INSTALL_PREFIX}/include/tensorflow/bazel-tensorflow/external/com_google_protobuf/src"
     )
     target_link_libraries(
       tensorflow_cc_shared INTERFACE
@@ -184,26 +182,31 @@ install(
   DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/"
   DESTINATION include/tensorflow
   FILES_MATCHING PATTERN "*.h"
+                 PATTERN "*.inc"
 )
 # install all header files downloaded by contrib/makefile
 # (Note that we cannot simply include all *.h or *.hpp files, since e.g., eigen
 # does not use file extensions for header files.)
-install(
-  DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/tensorflow/contrib/makefile/downloads/"
-  DESTINATION include/tensorflow/tensorflow/contrib/makefile/downloads
-  FILES_MATCHING PATTERN "*"
-                 PATTERN "Makefile*"  EXCLUDE
-                 PATTERN "*unittest*" EXCLUDE
-                 PATTERN "*.o"        EXCLUDE
-                 PATTERN "*.so"       EXCLUDE
-                 PATTERN "*.so.*"     EXCLUDE
-                 PATTERN "*.a"        EXCLUDE
-                 PATTERN "*.tbz"      EXCLUDE
-                 PATTERN "*.tgz"      EXCLUDE
-                 PATTERN "*.tar"      EXCLUDE
-                 PATTERN "*.tar.*"    EXCLUDE
-                 PATTERN "*.zip"      EXCLUDE
-)
+ install(
+   DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-tensorflow/external/eigen_archive"
+   DESTINATION include/tensorflow/bazel-tensorflow/external/eigen_archive
+   FILES_MATCHING PATTERN "*"
+                  PATTERN "*.cpp"      EXCLUDE
+		  PATTERN "*.f"        EXCLUDE
+		  PATTERN "*.dat"      EXCLUDE
+		  PATTERN "*.txt"      EXCLUDE
+                  PATTERN "Makefile*"  EXCLUDE
+                  PATTERN "*unittest*" EXCLUDE
+                  PATTERN "*.o"        EXCLUDE
+                  PATTERN "*.so"       EXCLUDE
+                  PATTERN "*.so.*"     EXCLUDE
+                  PATTERN "*.a"        EXCLUDE
+                  PATTERN "*.tbz"      EXCLUDE
+                  PATTERN "*.tgz"      EXCLUDE
+                  PATTERN "*.tar"      EXCLUDE
+                  PATTERN "*.tar.*"    EXCLUDE
+                  PATTERN "*.zip"      EXCLUDE
+ )
 # install all files from third_party folder (e.g., Eigen/Tensor)
 install(
   DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/third_party/"
@@ -212,7 +215,7 @@ install(
 # install static libprotobuf from contrib/makefile
 if (NOT SYSTEM_PROTOBUF)
   install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/tensorflow/contrib/makefile/gen/protobuf-host/lib/libprotobuf.a"
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/bazel-tensorflow/external/com_google_protobuf/src/.libs/libprotobuf.a"
     DESTINATION lib/tensorflow_cc
   )
 endif()

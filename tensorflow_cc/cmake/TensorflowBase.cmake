@@ -15,13 +15,14 @@ ExternalProject_Add(
   SOURCE_DIR "tensorflow"
   BUILD_IN_SOURCE 1
   UPDATE_COMMAND ""
-  CONFIGURE_COMMAND make -f tensorflow/contrib/makefile/Makefile clean
+  CONFIGURE_COMMAND echo "Just skip this step:)"
 
             # TODO This is a patch for 1.12.0.
-            COMMAND git checkout master -- tensorflow/tf_version_script.lds
-            COMMAND sed -i "s#${OLD_PROTOBUF}#${FIXED_PROTOBUF}#g" tensorflow/contrib/makefile/download_dependencies.sh
+	    # TODO patch removed for 2.1.0
+	                COMMAND git checkout master -- tensorflow/tf_version_script.lds
+	    #COMMAND sed -i "s#${OLD_PROTOBUF}#${FIXED_PROTOBUF}#g" tensorflow/contrib/makefile/download_dependencies.sh
 
-            COMMAND tensorflow/contrib/makefile/download_dependencies.sh
+	    #         COMMAND tensorflow/contrib/makefile/download_dependencies.sh
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
 )

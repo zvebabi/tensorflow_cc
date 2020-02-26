@@ -10,12 +10,14 @@ ExternalProject_Add(
   BUILD_IN_SOURCE 1
   DOWNLOAD_COMMAND ""
   UPDATE_COMMAND ""
-  CONFIGURE_COMMAND tensorflow/contrib/makefile/compile_linux_protobuf.sh
+  CONFIGURE_COMMAND echo "Do shared conf tensorflow/contrib/makefile/compile_linux_protobuf.sh"
             # Do not fail on warnings when building nsync
-            COMMAND sed -i "s/ -Werror//g" tensorflow/contrib/makefile/compile_nsync.sh
-            COMMAND tensorflow/contrib/makefile/compile_nsync.sh
+            #COMMAND sed -i "s/ -Werror//g" tensorflow/contrib/makefile/compile_nsync.sh
+            #COMMAND tensorflow/contrib/makefile/compile_nsync.sh
             COMMAND "${CMAKE_CURRENT_BINARY_DIR}/build_tensorflow.sh"
             COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/cmake/copy_links.sh" .
+	    # TF v2.1.0 doesn't do it automatically
+	    COMMAND "${CMAKE_CURRENT_BINARY_DIR}/build_libprotobuf.sh"
             # For some reason, Bazel sometimes puts the headers into
             # `bazel-genfiles/genfiles` and sometimes just to `bazel-genfiles`.
             # So we just create and include both the directories.

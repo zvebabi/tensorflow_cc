@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+echo "Build libprotobuf.a"
+
+#go to path with protobuf 
+cd ./bazel-tensorflow/external/com_google_protobuf/
+
+./autogen.sh
+if [ $? -ne 0 ]
+then
+  echo "./autogen.sh command failed."
+  exit 1
+fi
+
+./configure --disable-shared CXXFLAGS=-fPIC
+if [ $? -ne 0 ]
+then
+  echo "./configure command failed."
+  exit 1
+fi
+
+make clean
+
+make -j`nproc`
+if [ $? -ne 0 ]
+then
+  echo "make command failed."
+  exit 1
+fi
+
+#go back
+cd -
+
+echo "Done"
